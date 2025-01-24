@@ -17,7 +17,7 @@ mkdir -p checkpoint
 mkdir -p tensorboard
 
 # Step 1.3: Run main.py in step1
-export CUDA_VISIBLE_DEVICES=0,1,2,3 
+export CUDA_VISIBLE_DEVICES=0,1
 nohup deepspeed --master_port 13001 main.py \
    --data_path ../datasets/conqord_step1_data/ \
    --data_split 10,0,0 \

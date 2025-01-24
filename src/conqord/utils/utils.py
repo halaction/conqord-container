@@ -46,7 +46,7 @@ class MovingAverage:
 def get_tokenizer(model_name_or_path, fast_tokenizer=True):
     if "llama" in model_name_or_path:
         # from transformers.models.llama import LlamaTokenizer
-        print('model_name_or_path',model_name_or_path)
+        print('model_name_or_path', model_name_or_path)
         tokenizer = AutoTokenizer.from_pretrained(
             model_name_or_path, fast_tokenizer=fast_tokenizer)
         if tokenizer.pad_token is None:
@@ -64,6 +64,7 @@ def get_tokenizer(model_name_or_path, fast_tokenizer=True):
 
 
 def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
+
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(model_name_or_path, "config.json")
@@ -71,11 +72,15 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
             model_json_file = json.load(open(model_json))
             # model_name = model_json_file["_name_or_path"]
             model_name = model_name_or_path
-            tokenizer = get_tokenizer(model_name,
-                                      fast_tokenizer=fast_tokenizer)
+            tokenizer = get_tokenizer(
+                model_name,
+                fast_tokenizer=fast_tokenizer
+            )
     else:
-        tokenizer = get_tokenizer(model_name_or_path,
-                                  fast_tokenizer=fast_tokenizer)
+        tokenizer = get_tokenizer(
+            model_name,
+            fast_tokenizer=fast_tokenizer
+        )
 
     return tokenizer
 
