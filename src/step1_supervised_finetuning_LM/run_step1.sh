@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # --------------- Step1 supervised finetuning LLM to output confidence -------------------------
 
 
@@ -15,10 +17,11 @@ mkdir -p checkpoint
 mkdir -p tensorboard
 
 # Step 1.3: Run main.py in step1
-export CUDA_VISIBLE_DEVICES=0,1,2,3 nohup deepspeed --master_port 13001 main.py \
+export CUDA_VISIBLE_DEVICES=0,1,2,3 
+nohup deepspeed --master_port 13001 main.py \
    --data_path ../datasets/conqord_step1_data/ \
    --data_split 10,0,0 \
-   --model_name_or_path ../model_pth/llama2_hf_7b/ \
+   --model_name_or_path ../model_pth/llama3_1b/ \
    --per_device_train_batch_size 32 \
    --per_device_eval_batch_size 32 \
    --data_output_path ../datasets/datatmp/ \
