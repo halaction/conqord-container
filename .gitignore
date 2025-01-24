@@ -171,5 +171,6 @@ cython_debug/
 .pypirc
 
 # Custom
-src/datasets/
-src/model_pth/
+src/conqord/datasets/
+src/conqord/model_pth/
+nohup.out
