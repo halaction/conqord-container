@@ -1,5 +1,5 @@
 # FROM nvidia/cuda:12.2.0-base-ubuntu20.04
-FROM nvidia/cuda:12.6.3-base-ubuntu22.04
+FROM nvidia/cuda:12.6.3-devel-ubuntu22.04
 
 WORKDIR /workspace
 
