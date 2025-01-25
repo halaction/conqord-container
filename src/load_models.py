@@ -1,13 +1,17 @@
 from huggingface_hub import snapshot_download
+
 from paths import MODEL_DIR
+from config import SupportedModels
 
 
 def main():
 
+    model_id = 'llama3_1b'
+
     snapshot_download(
-        repo_id="luezzka/LLama-3.2-1B", 
+        repo_id=SupportedModels[model_id], 
         repo_type="model", 
-        local_dir=MODEL_DIR / 'llama3_1b',
+        local_dir=MODEL_DIR / model_id,
     )
 
 
