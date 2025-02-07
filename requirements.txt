@@ -1,6 +1,7 @@
 --find-links https://download.pytorch.org/whl/torch_stable.html
-torch>=1.13.0+cu117
+torch>=1.13.0+cu117,<2.6.0
 tensorboardX>=2.6.2.2
+tensorboard>=1.15.0
 transformers>=4.28.1
 deepspeed>=0.14.1
 huggingface_hub>=0.22.1
