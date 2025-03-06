@@ -14,6 +14,8 @@ from transformers import (
     get_scheduler,
 )
 
+from tqdm import tqdm
+
 import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
 
@@ -173,6 +175,9 @@ def parse_args():
                         type=str,
                         default="step2_tensorboard")
     parser = deepspeed.add_config_arguments(parser)
+    
+    parser.add_argument('--debug', action='store_true')
+
     args = parser.parse_args()
 
     return args
@@ -216,7 +221,7 @@ def main():
                                    ds_config,
                                    args.num_padding_at_beginning,
                                    disable_dropout=args.disable_dropout)
-
+    print(args.model_name_or_path, type(tokenizer), type(rm_model))
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,
                                                 args.lora_module_name,
@@ -255,7 +260,7 @@ def main():
         total_predictions = 0
         scores = 0
         mean_loss = 0
-        for step, batch in enumerate(eval_dataloader):
+        for step, batch in tqdm(enumerate(eval_dataloader)):
             batch = to_device(batch, device)
             with torch.no_grad():
                 outputs = model(**batch)
@@ -314,7 +319,11 @@ def main():
     print_rank_0(
         f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    reward_score, acc, valid_loss = evaluation_reward(rm_model, eval_dataloader)
+    if args.debug:
+        reward_score, acc, valid_loss = evaluation_reward(rm_model, eval_dataloader, fast_step=10)
+    else:
+        reward_score, acc, valid_loss = evaluation_reward(rm_model, eval_dataloader)
+    
     print_rank_0(
         f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}, validation loss : {valid_loss}",
         args.global_rank)
@@ -329,7 +338,7 @@ def main():
             args.global_rank)
         rm_model.train()
         mean_loss = 0
-        for step, batch in enumerate(train_dataloader):
+        for step, batch in tqdm(enumerate(train_dataloader)):
             batch = to_device(batch, device)
             outputs = rm_model(**batch, use_cache=False)
             if args.gradient_accumulation_steps >= 1:
@@ -343,7 +352,7 @@ def main():
                 print(
                     f"Step: {step}, Rank: {torch.distributed.get_rank()}, loss = {loss.item()}"
                 )
-            if args.output_dir is not None and step % 100 == 0:
+            if args.output_dir is not None and (step % 100 == 0 or args.debug and step % 20 == 0):
                 print_rank_0('saving model ...', args.global_rank)
                 rm_model = convert_lora_to_linear_layer(rm_model)
 
@@ -363,6 +372,9 @@ def main():
                 #     summary_writer.add_scalar(f'Step/train_loss', loss.item(), epoch*1080 + step)
                 #     summary_writer.add_scalar(f'Step/reward_score', reward_score, epoch*1080 + step)
                 #     summary_writer.add_scalar(f'Step/acc', acc, epoch*1080 + step)
+            if args.debug and step == 30:
+                break
+
         print_rank_0(
             f"Epoch {epoch+1}/{args.num_train_epochs} with loss {mean_loss/(step+1)}",
             args.global_rank)
@@ -375,7 +387,11 @@ def main():
         print_rank_0(
             f"***** Evaluating reward, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank)
-        reward_score, acc, valid_loss = evaluation_reward(rm_model, eval_dataloader)
+        if args.debug:
+            reward_score, acc, valid_loss = evaluation_reward(rm_model, eval_dataloader, fast_step=20)
+        else:
+            reward_score, acc, valid_loss = evaluation_reward(rm_model, eval_dataloader)
+        
         print_rank_0(
             f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}",
             args.global_rank)
