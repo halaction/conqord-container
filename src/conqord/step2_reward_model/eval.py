@@ -11,7 +11,7 @@ from utils.utils import to_device
 from utils.utils import load_hf_tokenizer
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
-from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
+from utils.data.data_utils import get_raw_dataset, DataCollatorReward, PromptDataset, create_prompt_dataset
 from datasets import concatenate_datasets
 
 import deepspeed
@@ -96,6 +96,7 @@ def evaluation_reward(model, eval_dataloader, device):
             
         return chosen_scores, rejected_scores, mean_loss
 
+
 def main():
     args = parse_args()
     
@@ -120,7 +121,9 @@ def main():
                                    args.num_padding_at_beginning,
                                    disable_dropout=True)
     rm_model.to(device)
-    print(args.model_name_or_path, type(tokenizer), type(rm_model))
+
+    raw_dataset = get_raw_dataset(args.data_path, args.data_output_path, args.seed, args.local_rank)
+    raw_eval_dataset = raw_dataset.get_eval_data()
 
     _, eval_dataset = create_prompt_dataset(
         args.local_rank, args.data_path, args.data_split,
@@ -138,9 +141,10 @@ def main():
     chosen_scores, rejected_scores, mean_loss = evaluation_reward(rm_model, eval_dataloader, device)
     print('Loss: ', mean_loss)
 
-    eval_dataset = eval_dataset.add_column("chosen_scores", chosen_scores)
-    eval_dataset = eval_dataset.add_column("rejected_scores", rejected_scores)   
-    eval_dataset.save_to_disk(f"{args.output_dir}/resulting_eval_dataset")
+    raw_eval_dataset = raw_eval_dataset.add_column("chosen_scores", chosen_scores)
+    raw_eval_dataset = raw_eval_dataset.add_column("rejected_scores", rejected_scores)   
+    raw_eval_dataset.to_csv(f"{args.output_dir}/resulting_eval_dataset.csv")
+    raw_eval_dataset.save_to_disk(f"{args.output_dir}/resulting_eval_dataset")
 
 if __name__ == "__main__":
     main()
