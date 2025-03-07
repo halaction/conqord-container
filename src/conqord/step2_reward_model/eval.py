@@ -31,6 +31,13 @@ def parse_args():
         type=str,
         default='/tmp/data_files/',
         help='Where to store the data-related files such as shuffle index.')
+    parser.add_argument('--data_split',
+                        type=str,
+                        default='2,4,4',
+                        help='Comma-separated list of proportions for training'
+                        'phase 1, 2, and 3 data. For example the split `2,4,4`'
+                        'will use 60%% of data for phase 1, 20%% for phase 2'
+                        'and 20%% for phase 3.')
     parser.add_argument(
         "--model_name_or_path",
         type=str,
@@ -106,7 +113,7 @@ def main():
     print(args.model_name_or_path, type(tokenizer), type(rm_model))
 
     _, eval_dataset = create_prompt_dataset(
-        args.local_rank, args.data_path, (0,10,0),
+        args.local_rank, args.data_path, args.data_split,
         args.data_output_path, 2, args.seed, tokenizer,
         args.max_seq_len)
         
