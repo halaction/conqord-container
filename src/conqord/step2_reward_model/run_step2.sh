@@ -13,7 +13,7 @@ mkdir -p tensorboard
 # Step 2.1: Downloading dataset from https://huggingface.co/datasets/hooope/CONQORD_datasets/conqord_step2_data, and save them to ../datasets/conqord_step2_data/
 
 # Step 2.2: Run main.py in step2
-export CUDA_VISIBLE_DEVICES=0,1 
+export CUDA_VISIBLE_DEVICES=0,1,2 
 # nohup 
 deepspeed --master_port 23001 main.py \
    --data_path openai/webgpt_comparisons \
@@ -34,7 +34,6 @@ deepspeed --master_port 23001 main.py \
    --gradient_checkpointing \
    --zero_stage 3 \
    --deepspeed \
-   --offload \
    --lora_dim 128 \
    --lora_module_name "layers." \
    --output_dir checkpoint/step2 \
