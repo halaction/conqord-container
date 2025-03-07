@@ -41,6 +41,8 @@ deepspeed --master_port 23001 main.py \
    --tensorboard_path tensorboard/step2 \
    &> log/step2.log 2>&1 &
 
+#   --offload \
+#   --debug \
 
 
 

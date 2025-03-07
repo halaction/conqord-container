@@ -17,20 +17,20 @@ mkdir -p checkpoint
 mkdir -p tensorboard
 
 # Step 1.3: Run main.py in step1
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=0,1,2
 # nohup 
 deepspeed --master_port 13001 main.py \
    --data_path openai/webgpt_comparisons \
    --data_split 10,0,0 \
-   --model_name_or_path ../model_pth/llama3_1b/ \
-   --per_device_train_batch_size 32 \
-   --per_device_eval_batch_size 32 \
+   --model_name_or_path ../model_pth/gemma_2b/ \
+   --per_device_train_batch_size 2 \
+   --per_device_eval_batch_size 2 \
    --data_output_path ../datasets/datatmp/ \
    --max_seq_len 512 \
    --learning_rate 1e-4 \
    --weight_decay 0. \
    --num_train_epochs 3 \
-   --gradient_accumulation_steps 64 \
+   --gradient_accumulation_steps 1024 \
    --lr_scheduler_type cosine \
    --num_warmup_steps 5 \
    --seed 1234 \
@@ -43,6 +43,6 @@ deepspeed --master_port 13001 main.py \
    --print_loss \
    --enable_tensorboard \
    --tensorboard_path tensorboard/step1 \
-   &> log/step1.log 2>&1 &
+   > log/step1.log 2>&1 &
 
 
