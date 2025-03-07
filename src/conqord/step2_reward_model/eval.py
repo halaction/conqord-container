@@ -85,6 +85,7 @@ def evaluation_reward(model, eval_dataloader, device):
         chosen_scores = []
         rejected_scores = []
         mean_loss = 0
+        print(len(eval_dataloader))
         for step, batch in tqdm(enumerate(eval_dataloader)):
             batch = to_device(batch, device)
             with torch.no_grad():
@@ -97,25 +98,35 @@ def evaluation_reward(model, eval_dataloader, device):
 
 def main():
     args = parse_args()
+    
+    if args.local_rank == -1:
+        device = torch.device("cuda")
+    else:
+        torch.cuda.set_device(args.local_rank)
+        device = torch.device("cuda", args.local_rank)
+        deepspeed.init_distributed()
 
     torch.cuda.set_device(args.local_rank)
     device = torch.device("cuda", args.local_rank)
-    
+
+    args.global_rank = torch.distributed.get_rank()
     set_random_seed(args.seed)
     torch.distributed.barrier()
-
+    
     tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    None,
                                    args.num_padding_at_beginning,
                                    disable_dropout=True)
+    rm_model.to(device)
     print(args.model_name_or_path, type(tokenizer), type(rm_model))
 
     _, eval_dataset = create_prompt_dataset(
         args.local_rank, args.data_path, args.data_split,
         args.data_output_path, 2, args.seed, tokenizer,
         args.max_seq_len)
+    print(_.shape, eval_dataset.shape)
         
     data_collator = DataCollatorReward()
     eval_sampler = SequentialSampler(eval_dataset)
@@ -124,7 +135,7 @@ def main():
                                  sampler=eval_sampler,
                                  batch_size=args.per_device_eval_batch_size)
     
-    chosen_scores, rejected_scores, mean_loss = evaluation_reward(rm_model, eval_dataloader)
+    chosen_scores, rejected_scores, mean_loss = evaluation_reward(rm_model, eval_dataloader, device)
     print('Loss: ', mean_loss)
 
     eval_dataset = eval_dataset.add_column("chosen_scores", chosen_scores)
