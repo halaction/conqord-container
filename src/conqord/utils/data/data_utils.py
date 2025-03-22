@@ -172,8 +172,7 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
             # tokenize the text
             chosen_sentence = raw_dataset.get_prompt_and_chosen(
                 tmp_data)  # the accept response
-            if i % 1000 == 0:
-                print('PROMPT:',chosen_sentence)
+            
             if chosen_sentence is not None:
                 chosen_sentence += end_of_conversation_token
                 chosen_token = tokenizer(chosen_sentence,
@@ -194,8 +193,7 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
                 tmp_data)  # the accept response
             reject_sentence = raw_dataset.get_prompt_and_rejected(
                 tmp_data)  # the accept response
-            if i % 1000 == 0:
-                print('PROMPT:',chosen_sentence)
+            
             if chosen_sentence is not None and reject_sentence is not None:
                 chosen_sentence += end_of_conversation_token  # the accept response
                 reject_sentence += end_of_conversation_token

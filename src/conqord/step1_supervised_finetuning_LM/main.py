@@ -357,7 +357,7 @@ def main():
             if torch.distributed.get_rank() == 0:
                 print_throughput(model.model, args, end - start,
                                  args.global_rank)
-            if args.output_dir is not None and step % 100 == 0:
+            if args.output_dir is not None and (step + 1) % 100 == 0:
                 print_rank_0('saving the final model ...', args.global_rank)
                 model = convert_lora_to_linear_layer(model)
 
