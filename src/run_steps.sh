@@ -1,14 +1,13 @@
 #!/bin/sh
 
-cd /workspace/src
-python3 load_datasets.py
-python3 load_models.py
+cd /workspace/conqord-container/src
+python3 load_models.py --model_id gemma_2b
 
-ls -a /workspace/src/conqord/datasets
-ls -a /workspace/src/conqord/datasets
-
-cd /workspace/src/conqord/step1_supervised_finetuning_LM
+cd /workspace/conqord-container/src/conqord/step1_supervised_finetuning_LM
 sh run_step1.sh
 
-cd /workspace/src/conqord/step2_reward_model
+cd /workspace/conqord-container/src/conqord/step2_reward_model
 sh run_step2.sh
+
+cd /workspace/conqord-container/src/conqord/step3_RL_finetune_LLM
+sh run_step3.sh

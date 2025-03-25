@@ -1,17 +1,14 @@
+#!/bin/sh
 
-
-# --------------- Step3 RL finetune LM -------------------------
-
-
+# Step3 RL finetune LM
 # The current directory is ./step3_RL_finetune_LLM/ (=CONQORD/step3_RL_finetune_LLM/)
+
 # Step 3.0: Create log, checkpoint, tensorboard folders  
 mkdir -p log
 mkdir -p checkpoint
 mkdir -p tensorboard
 
 # Step 3.1: Downloading dataset from https://huggingface.co/datasets/hooope/CONQORD_datasets/conqord_step3_data, and save them to ../datasets/conqord_step3_data/
-
-
 # Step 3.2: Run main.py in step3
 export CUDA_VISIBLE_DEVICES=0,1,2 
 # nohup 
@@ -51,4 +48,4 @@ deepspeed --master_port 33001 main.py \
    --output_dir checkpoint/step3 \
    --enable_tensorboard \
    --tensorboard_path tensorboard/step3 \
-   &> log/step3.log 2>&1 &
+   > log/step3.log 2>&1
