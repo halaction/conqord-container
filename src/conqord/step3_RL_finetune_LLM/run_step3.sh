@@ -13,12 +13,14 @@ mkdir -p tensorboard
 
 
 # Step 3.2: Run main.py in step3
-export CUDA_VISIBLE_DEVICES=0,1,2,3 nohup deepspeed --master_port 33001 main.py \
-   --data_path ../datasets/conqord_step3_data、 \
+export CUDA_VISIBLE_DEVICES=0,1,2 
+# nohup 
+deepspeed --master_port 33001 main.py \
+   --data_path openai/webgpt_comparisons \
    --data_split 0,0,10 \
-   --actor_model_name_or_path ../step1_supervised_finetuning_LM/checkpoint/step1/final \
-   --tokenizer_model_name_or_path ../model_pth/llama2_all_hf/llama2_hf_7b/ \
-   --critic_model_name_or_path ../step2_reward_model_finetuning/checkpoint/step2/ep3/ \ # Please choose the best epoch.
+   --actor_model_name_or_path ../model_pth/gemma_2b/ \
+   --tokenizer_model_name_or_path ../model_pth/gemma_2b/ \
+   --critic_model_name_or_path ../model_pth/gemma_2b/ \
    --num_padding_at_beginning 1 \
    --per_device_generation_batch_size 1 \
    --per_device_training_batch_size 1 \
