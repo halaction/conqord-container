@@ -12,7 +12,7 @@ mkdir -p tensorboard
 export CUDA_VISIBLE_DEVICES=0,1,2
 deepspeed --master_port 13001 main.py \
    --data_path openai/webgpt_comparisons \
-   --data_split 3,0,10 \
+   --data_split 5,0,10 \
    --model_name_or_path "$HF_HUB_CACHE/$MODEL_DIR/snapshots/$SNAPSHOT_HASH/" \
    --per_device_train_batch_size 4 \
    --per_device_eval_batch_size 4 \
@@ -21,7 +21,7 @@ deepspeed --master_port 13001 main.py \
    --learning_rate 1e-4 \
    --weight_decay 0. \
    --num_train_epochs 1 \
-   --gradient_accumulation_steps 16 \
+   --gradient_accumulation_steps 64 \
    --lr_scheduler_type cosine \
    --num_warmup_steps 5 \
    --seed 1234 \
