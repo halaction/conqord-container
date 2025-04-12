@@ -7,46 +7,46 @@ import torch
 
 # This function can be used to print throughput for Step 1 and 2 only
 def print_throughput(hf_model, args, e2e_time, rank=0):
-    if rank <= 0:
-        hf_config = hf_model.config
-        num_layers, hidden_size, vocab_size = get_hf_configs(hf_config)
+    if rank != 0:
+        return
 
-        gpus_per_model = torch.distributed.get_world_size()
-        seq_length = args.max_seq_len
-        batch_size = args.per_device_train_batch_size
-        samples_per_second = batch_size / e2e_time
-        checkpoint_activations_factor = 4 if args.gradient_checkpointing else 3
-        if args.lora_dim > 0:
-            k = args.lora_dim * 2 / hidden_size
-            checkpoint_activations_factor -= 1 - k
+    hf_config = hf_model.config
+    num_layers, hidden_size, vocab_size = get_hf_configs(hf_config)
 
-        hf_model._num_params = sum(
-            [
-                p.ds_numel if hasattr(p, "ds_tensor") else p.numel()
-                for p in hf_model.parameters()
-            ]
-        )
-        params_in_billions = hf_model._num_params / (1e9)
+    gpus_per_model = torch.distributed.get_world_size()
+    seq_length = args.max_seq_len
+    batch_size = args.per_device_train_batch_size
+    samples_per_second = batch_size / e2e_time
+    checkpoint_activations_factor = 4 if args.gradient_checkpointing else 3
+    if args.lora_dim > 0:
+        k = args.lora_dim * 2 / hidden_size
+        checkpoint_activations_factor -= 1 - k
 
-        # Megatron paper's formula to calculate training flops
-        train_flops_per_iteration = calculate_flops(
-            checkpoint_activations_factor,
-            batch_size,
-            seq_length,
-            hf_config,
-        )
+    hf_model._num_params = sum(
+        [
+            p.ds_numel if hasattr(p, "ds_tensor") else p.numel()
+            for p in hf_model.parameters()
+        ]
+    )
+    params_in_billions = hf_model._num_params / (1e9)
 
-        train_tflops = train_flops_per_iteration / (
-            e2e_time * gpus_per_model * (10**12)
-        )
+    # Megatron paper's formula to calculate training flops
+    train_flops_per_iteration = calculate_flops(
+        checkpoint_activations_factor,
+        batch_size,
+        seq_length,
+        hf_config,
+    )
 
-        model_params = params_in_billions
-        throughput = samples_per_second
-        latency = e2e_time
-        tflops = train_tflops
-        print(
-            f"[{model_params=:.2f}B | {batch_size=} | {seq_length=} | {throughput=:.2f}u/s | {latency=:.2f}s | {tflops=:.2f}]"
-        )
+    train_tflops = train_flops_per_iteration / (e2e_time * gpus_per_model * (10**12))
+
+    model_params = params_in_billions
+    throughput = samples_per_second
+    latency = e2e_time
+    tflops = train_tflops
+    print(
+        f"[{model_params=:.2f} B | {batch_size=} | {seq_length=} | {throughput=:.2f} u/s | {latency=:.2f} s | {tflops=:.2f}]"
+    )
 
 
 # Enhanced version of the function above that provides calculations and printing for Step 3

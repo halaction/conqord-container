@@ -17,7 +17,7 @@ deepspeed --master_port 13001 main.py \
    --per_device_train_batch_size 4 \
    --per_device_eval_batch_size 4 \
    --data_output_path ../datasets/datatmp/ \
-   --max_seq_len 512 \
+   --max_seq_len 256 \
    --learning_rate 1e-4 \
    --weight_decay 0. \
    --num_train_epochs 1 \

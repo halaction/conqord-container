@@ -396,6 +396,10 @@ def main():
             #     seq_sen = tokenizer.decode(seq, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
             #     print('OUTPUT:',seq_sen)
 
+            if torch.distributed.get_rank() == 0 and step % 10 == 0:
+                end = time.time()
+                print_throughput(model.model, args, end - start, args.global_rank)
+
             if args.gradient_accumulation_steps >= 1:
                 loss = outputs.loss / args.gradient_accumulation_steps
             else:
@@ -407,10 +411,6 @@ def main():
             if args.print_loss and step % 5 == 0:
                 rank = torch.distributed.get_rank()
                 print(f"[{rank=:02} | {epoch=:02} | {step=:04} | {loss=:.4f}]")
-
-            if torch.distributed.get_rank() == 0 and step % 10 == 0:
-                end = time.time()
-                print_throughput(model.model, args, end - start, args.global_rank)
 
             if args.output_dir is not None and step % 100 == 0:
                 print_rank_0("saving the final model ...", args.global_rank)
