@@ -3,6 +3,7 @@ import argparse
 import os
 import math
 import sys
+import time
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
@@ -371,15 +372,16 @@ def main():
     perplexity = evaluation(model, eval_dataloader)
     print_rank_0(f"ppl: {perplexity}", args.global_rank)
 
-    for epoch in range(args.num_train_epochs):
+    # TODO: Add NQ and IFEval evaluation here.
+
+    for epoch in range(1, args.num_train_epochs + 1):
         print_rank_0(
-            f"Beginning of Epoch {epoch + 1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
+            f"Beginning of Epoch {epoch}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
             args.global_rank,
         )
         model.train()
-        import time
 
-        for step, batch in enumerate(train_dataloader):
+        for step, batch in enumerate(train_dataloader, start=1):
             start = time.time()
             batch = to_device(batch, device)
             outputs = model(**batch, use_cache=False)
@@ -402,15 +404,15 @@ def main():
             model.backward(loss)
             model.step()
 
-            if args.print_loss and (step + 1) % 10 == 0:
+            if args.print_loss and step % 5 == 0:
                 rank = torch.distributed.get_rank()
-                print(f"[{rank=:.02} | {epoch=:.02} | {step=:.04} | {loss=:.4f}]")
+                print(f"[{rank=:02} | {epoch=:02} | {step=:04} | {loss=:.4f}]")
 
             if torch.distributed.get_rank() == 0 and step % 10 == 0:
                 end = time.time()
                 print_throughput(model.model, args, end - start, args.global_rank)
 
-            if args.output_dir is not None and (step + 1) % 100 == 0:
+            if args.output_dir is not None and step % 100 == 0:
                 print_rank_0("saving the final model ...", args.global_rank)
                 model = convert_lora_to_linear_layer(model)
 
@@ -435,7 +437,7 @@ def main():
 
         # Evaluate perplexity on the validation set.
         print_rank_0(
-            f"***** Evaluating perplexity, Epoch {epoch+1}/{args.num_train_epochs} *****",
+            f"***** Evaluating perplexity, Epoch {epoch}/{args.num_train_epochs} *****",
             args.global_rank,
         )
         perplexity = evaluation(model, eval_dataloader)

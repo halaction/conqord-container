@@ -30,7 +30,10 @@ def print_throughput(hf_model, args, e2e_time, rank=0):
 
         # Megatron paper's formula to calculate training flops
         train_flops_per_iteration = calculate_flops(
-            checkpoint_activations_factor, batch_size, seq_length, hf_config
+            checkpoint_activations_factor,
+            batch_size,
+            seq_length,
+            hf_config,
         )
 
         train_tflops = train_flops_per_iteration / (
@@ -42,7 +45,7 @@ def print_throughput(hf_model, args, e2e_time, rank=0):
         latency = e2e_time
         tflops = train_tflops
         print(
-            f"[{model_params=:.2f} (B) | {batch_size=} | {seq_length=} | {throughput=:.2f} (u/s) | {latency=:.2f} (s) | {tflops=:.2f}]"
+            f"[{model_params=:.2f}B | {batch_size=} | {seq_length=} | {throughput=:.2f}u/s | {latency=:.2f}s | {tflops=:.2f}]"
         )
 
 
