@@ -14,19 +14,32 @@ MODEL_NAME=$(echo "$MODEL" | cut -d "/" -f 2)
 echo "Downloading $MODEL..."
 MODEL_PATH=$(huggingface-cli download $MODEL)
 
+# Step 1
+STEP_PATH="$CONQORD_DIR/step1_supervised_finetuning_LM"
+REPO_ID="halaction/$MODEL_NAME-conqord-step1"
+CHECKPOINT_PATH="$STEP_PATH/checkpoint/step1"
+
+cd $STEP_PATH
+
 echo "Running step 1..."
-cd "$CONQORD_DIR/step1_supervised_finetuning_LM"
 MODEL_PATH="$MODEL_PATH" sh run_step1.sh
 
+rm -rf "$CHECKPOINT_PATH/pytorch_model.bin"
+mv "$CHECKPOINT_PATH/final/pytorch_model.bin" "$CHECKPOINT_PATH/pytorch_model.bin"
+
 echo "Uploading step 1 checkpoint..."
-REPO_ID="halaction/$MODEL_NAME-conqord-step1"
-LOCAL_PATH="./checkpoint/step1"
-huggingface-cli upload $REPO_ID $LOCAL_PATH . --repo-type model
+huggingface-cli upload $REPO_ID $CHECKPOINT_PATH . --repo-type model
+
+# Step 2
+STEP_PATH="$CONQORD_DIR/step2_reward_model"
+cd $STEP_PATH
 
 # echo "Running step 2..."
-# cd "$SOURCE_DIR/conqord/step2_reward_model"
 # sh run_step2.sh
 
+# Step 3
+STEP_PATH="$CONQORD_DIR/step3_RL_finetune_LLM"
+cd $STEP_PATH
+
 # echo "Running step 3..."
-# cd "$SOURCE_DIR/conqord/step3_RL_finetune_LLM"
 # sh run_step3.sh
