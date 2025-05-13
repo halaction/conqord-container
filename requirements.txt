@@ -1,13 +1,12 @@
 --find-links https://download.pytorch.org/whl/torch_stable.html
-torch>=1.13.0+cu117,<2.6.0
-tensorboardX>=2.6.2.2
-tensorboard>=1.15.0
-transformers>=4.28.1
-deepspeed>=0.14.1
-huggingface_hub>=0.22.1
-numpy>=1.24.3
-scipy>=1.12.0
-pandas>=2.1.4
+torch==2.5.1+cu117
+tensorboard==2.19.0
+transformers==4.51.3
+deepspeed==0.16.4
+huggingface-hub==0.31.2
+numpy==1.26.4
+scipy==1.15.2
+pandas==2.2.3
 datasets==3.2.0
-accelerate>=0.26.0
+accelerate==1.5.2
 hf_transfer==0.1.9
