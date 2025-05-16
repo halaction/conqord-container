@@ -141,8 +141,13 @@ class DeepSpeedRLHFEngine():
             num_training_steps=self.num_total_iters,
         )
 
-        # DeepSpeed Engine
-        #TODO: move enable_hybrid_engine and pin_parameters to ds_config
+        #del ds_config['fp16']
+        #ds_config['float32'] = {'enabled': False, 'loss_scale_window': 100}
+        ds_config['hybrid_engine'] = {'enabled': False, 'max_out_tokens': 512, 'inference_tp_size': 1, 'release_inference_cache': False, 'pin_parameters': True, 'tp_gather_partition_size': 8}
+        print('============================================================')
+        print(self.args)
+        print(ds_config)
+        print('============================================================')
         actor_engine, *_ = deepspeed.initialize(model=actor_model,
                                                 optimizer=optim,
                                                 lr_scheduler=lr_scheduler,
