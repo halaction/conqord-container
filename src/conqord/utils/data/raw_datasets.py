@@ -50,7 +50,6 @@ class PromptRawDataset(object):
 
     def get_prompt_and_rejected(self, sample):
         return
-    
 
 
 class AdaptiveRAGNaturalQuestions(PromptRawDataset):
@@ -59,6 +58,10 @@ class AdaptiveRAGNaturalQuestions(PromptRawDataset):
         self.output_path = output_path
         self.seed = seed
         self.local_rank = local_rank
+
+        self.dataset_name = dataset_name
+        self.dataset_name_clean = dataset_name.replace("/", "_").replace("-", "_")
+
         self.raw_datasets = load_dataset(dataset_name)
 
     def get_train_data(self):

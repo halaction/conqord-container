@@ -21,7 +21,7 @@ from utils.utils import print_rank_0
 
 def get_raw_dataset(dataset_name, output_path, seed, local_rank):
 
-    if "VityaVitalich/adaptive_rag_natural_questions" in dataset_name:
+    if "halaction/adaptive-rag-natural-questions" in dataset_name:
         return raw_datasets.AdaptiveRAGNaturalQuestions(
             output_path, seed, local_rank, dataset_name
         )
