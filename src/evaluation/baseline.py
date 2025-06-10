@@ -85,8 +85,14 @@ def main(args):
 
     dataset = load_dataset(args.dataset)
 
-    questions = dataset["train"]["question_text"]
-    accepted_answers = dataset["train"]["reference"]
+    match args.dataset:
+        case "VityaVitalich/adaptive_rag_natural_questions":
+            questions = dataset["train"]["question_text"]
+            accepted_answers = dataset["train"]["reference"]
+        case "halaction/adaptive-rag-natural-questions":
+            questions = dataset["train"]["prompt"]
+            accepted_answers = dataset["train"]["chosen"]
+
     for i in range(len(accepted_answers)):
         accepted_answers[i] = (
             ", ".join(accepted_answers[i])
