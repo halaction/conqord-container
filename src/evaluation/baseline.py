@@ -93,8 +93,8 @@ def main(args):
             questions = dataset["test"]["prompt"]
             accepted_answers = dataset["test"]["chosen"]
 
-    # questions = questions[:4]
-    # accepted_answers = accepted_answers[:4]
+    # questions = questions[:3]
+    # accepted_answers = accepted_answers[:3]
 
     if "Qwen3" in args.model:
         questions = [question + "/no_think" for question in questions]
@@ -110,8 +110,16 @@ def main(args):
 
     if "Qwen3" in args.model:
         results["generated_text"] = [
-            text.replace("<think>\n\n</think>\n\n", "")
+            text.replace("<think>", "").replace("</think>", "").strip()
             for text in results["generated_text"]
+        ]
+        results["vu_generated_text"] = [
+            text.replace("<think>", "").replace("</think>", "").strip()
+            for text in results["vu_generated_text"]
+        ]
+        results["vu_topk_generated_text"] = [
+            text.replace("<think>", "").replace("</think>", "").strip()
+            for text in results["vu_topk_generated_text"]
         ]
 
     print(f"{questions=}")
@@ -128,45 +136,77 @@ def main(args):
         model=args.alignscore_model,
         ckpt_folder_path=args.alignscore_ckpt_path,
     )
+    vu_alignscore_scores = alignscore(
+        results["vu_extracted_guess"],
+        accepted_answers,
+        evaluation_mode=args.alignscore_evaluation_mode,
+        batch_size=args.alignscore_batch_size,
+        device=args.device,
+        model=args.alignscore_model,
+        ckpt_folder_path=args.alignscore_ckpt_path,
+    )
+    vu_topk_alignscore_scores = alignscore(
+        results["vu_topk_extracted_guess"],
+        accepted_answers,
+        evaluation_mode=args.alignscore_evaluation_mode,
+        batch_size=args.alignscore_batch_size,
+        device=args.device,
+        model=args.alignscore_model,
+        ckpt_folder_path=args.alignscore_ckpt_path,
+    )
 
     results["question_text"] = questions
     results["accepted_answer"] = accepted_answers
     results["alignscore"] = alignscore_scores
+    results['vu_alignscore'] = vu_alignscore_scores
+    results['vu_topk_alignscore'] = vu_topk_alignscore_scores
 
     results_df = pd.DataFrame(results)
     results_df = results_df[
         [
-            "question_text",
-            "accepted_answer",
-            "generated_text",
-            "alignscore",
-            "Perplexity",
-            "MaximumSequenceProbability",
-            "LexicalSimilarity_rougeL",
-            "NumSemSets",
-            "VerbalUncertainty",
-            "VerbalUncertainty_corrected",
+            'question_text', 
+            'accepted_answer',
+            'generated_text',
+            'alignscore',
+            'Perplexity', 
+            'MaximumSequenceProbability',
+            'LexicalSimilarity_rougeL',
+            'NumSemSets',
+            'vu_generated_text',
+            'vu_extracted_guess',
+            'vu_alignscore',
+            'Verbalized1S',
+            'vu_topk_generated_text',
+            'vu_topk_extracted_guess',
+            'vu_topk_alignscore',
+            'Verbalized1STop4',
         ]
     ]
     results_df.to_csv(os.path.join(args.output_folder, args.results_output_name))
 
-    metrics = pd.DataFrame(columns=["eu_estimate", "metric", "value"])
-    for ue_estimate in [
-        "Perplexity",
-        "MaximumSequenceProbability",
-        "LexicalSimilarity_rougeL",
-        "NumSemSets",
-        "VerbalUncertainty_corrected",
-    ]:
-        for metric in ["prr", "ece", "spearman_corr", "kendall_corr"]:
-            metric_value = getattr(LMPolygraph, metric)(
-                results[ue_estimate], alignscore_scores
+    metrics = pd.DataFrame(columns=['eu_estimate', 'metric', 'value'])
+    for ue_estimate in ['Perplexity', 'MaximumSequenceProbability', 'LexicalSimilarity_rougeL', 'NumSemSets', 'Verbalized1S', 'Verbalized1STop4']:
+        for metric in ['prr', 'ece', 'rocauc', 'spearman_corr', 'kendall_corr']:
+            if ue_estimate == 'Verbalized1S':
+                metric_value = getattr(LMPolygraph, metric)(
+                    results[ue_estimate], vu_alignscore_scores
+                )
+
+            elif ue_estimate == 'Verbalized1STop4':
+                metric_value = getattr(LMPolygraph, metric)(
+                    results[ue_estimate], vu_topk_alignscore_scores
+                )
+                
+            else:
+                metric_value = getattr(LMPolygraph, metric)(
+                    results[ue_estimate], alignscore_scores
+                )
+            
+            data = pd.DataFrame(
+                [[ue_estimate, metric, metric_value]], 
+                columns=['eu_estimate', 'metric', 'value']
             )
-            _ = pd.DataFrame(
-                [[ue_estimate, metric, metric_value]],
-                columns=["eu_estimate", "metric", "value"],
-            )
-            metrics = pd.concat([metrics, _], ignore_index=True)
+            metrics = pd.concat([metrics, data], ignore_index=True) 
 
     metrics.to_csv(os.path.join(args.output_folder, args.metrics_output_name))
 

@@ -13,10 +13,10 @@ class ExpectedCalibrationError(UEMetric):
     def __str__(self):
         return "ece"
 
-    def __call__(self, estimator: List[float], target: List[float]) -> float:
+    def __call__(self, estimator: List[float], target: List[int]) -> float:
         """
         Parameters:
-            estimator (List[int]): a batch of uncertainty estimations.
+            estimator (List[float]): a batch of uncertainty estimations.
                 Higher values indicate more uncertainty.
             target (List[int]): a batch of ground-truth uncertainty estimations.
                 Higher values indicate less uncertainty.

@@ -16,7 +16,7 @@ MODEL_NAME=$(echo "$MODEL" | cut -d "/" -f 2)
 DATASET="halaction/adaptive-rag-natural-questions"
 MODEL_STEP3="halaction/$MODEL_NAME-conqord-step3-actor"
 
-mkdir -p "$RESULTS_DIR"
+mkdir -p "$RESULTS_DIR/$MODEL_NAME"
 
 python3 "$EVALUATION_DIR/baseline.py" \
     --dataset $DATASET \
