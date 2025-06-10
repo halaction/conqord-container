@@ -1,5 +1,4 @@
 # Training
-# --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==2.5.1 --extra-index-url https://download.pytorch.org/whl/cu117
 tensorboard==2.19.0
 transformers==4.51.3

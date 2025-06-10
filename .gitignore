@@ -173,7 +173,6 @@ cython_debug/
 # Custom
 src/conqord/datasets/
 src/conqord/model_pth/
-nohup.out
 
 tensorboard/
 checkpoint/
