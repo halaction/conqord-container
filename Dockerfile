@@ -17,6 +17,7 @@ RUN set -xe \
     && git clone https://github.com/halaction/conqord-container.git
 
 # Patch lm_polygraph bug
-RUN sed -i \
-    "s/from transformers import (.*)/# Patch\nfrom transformers import AutoConfig, AutoTokenizer, BertForPreTraining, BertModel, RobertaModel, AlbertModel, AlbertForMaskedLM, RobertaForMaskedLM, get_linear_schedule_with_warmup\nfrom transformers.optimization import AdamW/" \
-    "/usr/local/lib/python3.10/dist-packages/lm_polygraph/generation_metrics/alignscore_utils.py"
+RUN set -xe \
+    && perl -i -0pe \
+        "s/from transformers import \(.*?\)/# Patched import\nfrom transformers import AutoConfig, AutoTokenizer, BertForPreTraining, BertModel, RobertaModel, AlbertModel, AlbertForMaskedLM, RobertaForMaskedLM, get_linear_schedule_with_warmup\nfrom transformers.optimization import AdamW/s" \
+        "/usr/local/lib/python3.10/dist-packages/lm_polygraph/generation_metrics/alignscore_utils.py"
