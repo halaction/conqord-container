@@ -195,8 +195,7 @@ class LMPolygraph:
 
     @classmethod
     def ece(cls, estimations: List[float], target: List[float]):
-        return cls.metric(ExpectedCalibrationError, estimations, [round(i) for i in target])
-    
+        return cls.metric(ExpectedCalibrationError, estimations, target)
 
     @classmethod
     def rocauc(cls, estimations: List[float], target: List[float]):
