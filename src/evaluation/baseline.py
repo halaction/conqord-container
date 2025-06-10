@@ -80,18 +80,24 @@ def main(args):
         args.model,
         torch_dtype=torch.float16,
     ).to(args.device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, padding_side='left')
     polygraph = LMPolygraph(model, tokenizer, args.model)
 
     dataset = load_dataset(args.dataset)
 
     match args.dataset:
         case "VityaVitalich/adaptive_rag_natural_questions":
-            questions = dataset["train"]["question_text"]
-            accepted_answers = dataset["train"]["reference"]
+            questions = dataset["test"]["question_text"]
+            accepted_answers = dataset["test"]["reference"]
         case "halaction/adaptive-rag-natural-questions":
-            questions = dataset["train"]["prompt"]
-            accepted_answers = dataset["train"]["chosen"]
+            questions = dataset["test"]["prompt"]
+            accepted_answers = dataset["test"]["chosen"]
+
+    # questions = questions[:4]
+    # accepted_answers = accepted_answers[:4]
+
+    if "Qwen3" in args.model:
+        questions = [question + "/no_think" for question in questions]
 
     for i in range(len(accepted_answers)):
         accepted_answers[i] = (
@@ -101,6 +107,15 @@ def main(args):
         )
 
     results = polygraph(questions, batch_size=args.batch_size, verbose=True)
+
+    if "Qwen3" in args.model:
+        results["generated_text"] = [
+            text.replace("<think>\n\n</think>\n\n", "")
+            for text in results["generated_text"]
+        ]
+
+    print(f"{questions=}")
+    print(f"{results=}")
 
     del polygraph, model, tokenizer
 

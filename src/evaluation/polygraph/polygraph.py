@@ -69,7 +69,7 @@ class LMPolygraph:
         if batch_size is None:
             batch_size = len(text_inputs)
 
-        man = UEManager(
+        manager = UEManager(
             Dataset(text_inputs, [""] * len(text_inputs), batch_size=batch_size),
             self.model,
             self.estimators,
@@ -79,16 +79,17 @@ class LMPolygraph:
             ignore_exceptions=False,
             verbose=verbose,
         )
+
         with torch.no_grad():
-            man()
+            manager()
             
         results = {}
         for estimator in self.estimators:
-            results[str(estimator)] = man.estimations[estimator.level, str(estimator)]
+            results[str(estimator)] = manager.estimations[estimator.level, str(estimator)]
             if str(estimator) == "VerbalUncertainty":
                 results["VerbalUncertainty_corrected"] = np.clip(np.nan_to_num(results[str(estimator)], nan=0.0), 0.0, 1.0)
 
-        results['generated_text'] = man.stats.get("greedy_texts", None)
+        results['generated_text'] = manager.stats.get("greedy_texts", None)
 
         return results
 

@@ -21,6 +21,6 @@ mkdir -p "$RESULTS_DIR"
 python3 "$EVALUATION_DIR/baseline.py" \
     --dataset $DATASET \
     --model $MODEL_STEP3 \
-    --batch_size 16 \
+    --batch_size 8 \
     --device cuda:0 \
     --output_folder "$RESULTS_DIR/$MODEL_NAME"
