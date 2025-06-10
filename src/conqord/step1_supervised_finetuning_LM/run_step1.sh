@@ -34,7 +34,7 @@ mkdir -p tensorboard
 
 echo "Running step 1 with $MODEL..."
 deepspeed --master_port 13001 main.py \
-   --data_path "openai/webgpt_comparisons" \
+   --data_path "halaction/adaptive-rag-natural-questions" \
    --data_split "10,0,0" \
    --model_name_or_path "$MODEL_PATH/" \
    --per_device_train_batch_size 4 \

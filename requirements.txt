@@ -1,5 +1,6 @@
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==2.5.1+cu117
+# Training
+# --find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.5.1 --extra-index-url https://download.pytorch.org/whl/cu117
 tensorboard==2.19.0
 transformers==4.51.3
 deepspeed==0.16.4
@@ -10,3 +11,13 @@ pandas==2.2.3
 datasets==3.2.0
 accelerate==1.5.2
 hf_transfer==0.1.9
+
+# Evaluation
+lm_polygraph==0.4.0
+spacy==3.8.5
+nltk==3.9.1
+tqdm==4.67.1
+jsonlines==4.0.0
+scikit-learn==1.6.1
+pytorch-lightning==2.5.1
+protobuf==4.25.6
